@@ -1,5 +1,22 @@
-<html>
-<head><title>Beturing - a Befunge-flavoured Turing machine</title></head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- encoding: UTF-8 -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Beturing - a Befunge-flavoured Turing machine</title>
+  <!-- begin html doc dynamic markup -->
+  <script type="text/javascript" src="/contrib/jquery-1.6.4.min.js"></script>
+  <script type="text/javascript" src="/scripts/documentation.js"></script>
+  <!-- end html doc dynamic markup -->
+  <style type="text/css">
+  td.grey {
+    background: #d0d0d0;
+  }
+  table {
+    align: center;
+  }
+  </style>
+</head>
 <body>
 <h1>Beturing</h1>
 <h2>a Befunge-flavoured Turing machine</h2>
@@ -30,10 +47,10 @@ the other of which (the <i>code head</i>) reads the state transition diagram.</p
 <p>The state transition diagram is made up of <i>codes</i>.  Each code is a
 2x2 block of cells in the following form:</p>
 
-<center><table border=0 bgcolor=#e0e0e0>
+<table border="0">
 <tr><td><tt>a</tt></td><td><tt>b</tt></td></tr>
 <tr><td><tt>&gt;</tt></td><td><tt>/</tt></td></tr>
-</table></center>
+</table>
 
 <p>The code head is considered to be over a code when it is over the upper-left cell of it.
 The names and meanings of the four parts of the code are as follows:</p>
@@ -109,7 +126,7 @@ seek symbol, and the following things happen:
 <p>The positive and negative interpretations of the data head movement and state transition
 operators are given below:</p>
 
-<center><table border=1>
+<table border="1">
 <tr><th>Symbol</th><th>Positive interpretation</th><th>Negative interpretation</th></tr>
 <tr><td><tt>&gt;</tt></td><td>Move right</td><td>Move right</td></tr>
 <tr><td><tt>&lt;</tt></td><td>Move left</td><td>Move left</td></tr>
@@ -117,13 +134,13 @@ operators are given below:</p>
 <tr><td><tt>v</tt></td><td>Move down</td><td>Move down</td></tr>
 <tr><td><tt>.</tt></td><td>Don't move</td><td>Don't move</td></tr>
 <tr><td><tt>/</tt></td><td>Move right</td><td>Move down</td></tr>
-<tr><td bgcolor=#d0d0d0><tt>\</tt></td><td>Move left</td><td>Move down</td></tr>
-<tr><td bgcolor=#d0d0d0><tt>|</tt></td><td>Move up</td><td>Move down</td></tr>
-<tr><td bgcolor=#d0d0d0><tt>-</tt></td><td>Move left</td><td>Move right</td></tr>
-<tr><td bgcolor=#d0d0d0><tt>`</tt></td><td>Move right</td><td>Move up</td></tr>
-<tr><td bgcolor=#d0d0d0><tt>'</tt></td><td>Move left</td><td>Move up</td></tr>
+<tr><td class="grey"><tt>\</tt></td><td>Move left</td><td>Move down</td></tr>
+<tr><td class="grey"><tt>|</tt></td><td>Move up</td><td>Move down</td></tr>
+<tr><td class="grey"><tt>-</tt></td><td>Move left</td><td>Move right</td></tr>
+<tr><td class="grey"><tt>`</tt></td><td>Move right</td><td>Move up</td></tr>
+<tr><td class="grey"><tt>'</tt></td><td>Move left</td><td>Move up</td></tr>
 <tr><td><tt>@</tt></td><td>Halt</td><td>Halt</td></tr>
-</table></center>
+</table>
 
 <p>Note that "x2" in the rules given above means to advance two cells in the given direction;
 this is used everywhere for moving the code head because codes are 2x2 cell blocks.</p>
@@ -148,8 +165,7 @@ four directions - there is no wrapping around, making it a true plane.</li>
 </ul>
 
 <p>All this added together means that a Beturing machine is incapable of having
-a state transition diagram that is not a
-<a href="http://planetmath.org/?op=getobj&from=objects&name=PlanarGraph">planar graph</a>.
+a state transition diagram that is not a planar graph.
 A state transition diagram which is a complete 5-vertex graph, for example, is not planar.</p>
 
 <p>This <b>might</b> mean that it is impossible to construct a
