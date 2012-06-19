@@ -1,7 +1,8 @@
 #!/usr/local/bin/lua
 --
--- beturing.lua
--- A Befunge-flavoured Turing(-esque) machine
+-- beturing.lua v1.1
+-- Interpreter for Beturing v1.1
+-- A Befunge-flavoured Turing machine
 -- Implemented in Lua 5 by Chris Pressey, June 2005
 --
 
@@ -37,15 +38,22 @@
 -- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 -- OF THE POSSIBILITY OF SUCH DAMAGE. 
 --
--- $Id: beturing.lua 2 2005-06-06 22:28:23Z catseye $
+-- $Id: beturing.lua 17 2005-06-12 02:37:25Z catseye $
+
+--
+-- v1.0: June 6 2005: initial release
+-- v1.1: June 8 2005: changed semantics of '*' special code
+--
 
 --[[ Common functions ]]--
 
 local debug_log = print
 local usage = function()
-    io.stderr:write("Usage: [lua] beturing.lua [-q] [filename.bet]\n")
+    io.stderr:write("Usage: [lua] beturing.lua [-oq] [-d x1,y1:x2,y2] [filename.bet]\n")
     os.exit(1)
 end
+local old_semantics = false
+local display = nil
 
 --[[ Object Classes ]]--
 
@@ -139,13 +147,17 @@ Playfield.new = function(tab)
     --
     -- Return a string representing the playfield.
     --
-    method.render = function(pf)
-        local y = min_y
-	local s = "--- (" .. tostring(min_x) .. "," .. tostring(min_y) .. ")-"
-	s = s .. "(" .. tostring(max_x) .. "," .. tostring(max_y) .. ") ---\n"
-        while y <= max_y do
-	    local x = min_x
-	    while x <= max_x do
+    method.render = function(pf, start_x, start_y, end_x, end_y)
+	start_x = start_x or min_x
+        start_y = start_y or min_y
+	end_x = end_x or max_x
+	end_y = end_y or max_y
+        local y = start_y
+	local s = "--- (" .. tostring(start_x) .. "," .. tostring(start_y) .. ")-"
+	s = s .. "(" .. tostring(end_x) .. "," .. tostring(end_y) .. ") ---\n"
+        while y <= end_y do
+	    local x = start_x
+	    while x <= end_x do
 	        s = s .. pf:peek(x, y)
 	        x = x + 1
 	    end
@@ -173,8 +185,15 @@ Head.new = function(tab)
     local pf = assert(tab.playfield)
     local x = tab.x or 0
     local y = tab.y or 0
+    local moves_left = 0
+    local moves_right = 0
 
     local method = {}
+
+    method.report = function(hd)
+        io.stdout:write("Moves left:  " .. tostring(moves_left) .. ", moves right: " .. tostring(moves_right) .. "\n")
+	io.stdout:write("Total moves: " .. tostring(moves_left + moves_right) .. "\n")
+    end
 
     method.read = function(hd, sym)
         return pf:peek(x, y)
@@ -212,8 +231,10 @@ Head.new = function(tab)
             y = y + 1
         elseif sym == "<" then
             x = x - 1
+	    moves_left = moves_left + 1
         elseif sym == ">" then
             x = x + 1
+	    moves_right = moves_right + 1
         elseif sym ~= "." then
             error("Illegal movement symbol '" .. sym .. "'")
         end
@@ -254,15 +275,39 @@ Machine.new = function(tab)
     local interpret = function(sym, sense)
         if sense then
 	    -- Positive interpretation.
-	    if sym == "/" then
+	    -- Backwards compatibility:
+	    if old_semantics then
+	        if sym == "/" then
+		    return ">"
+		else
+		    return sym
+		end
+	    end
+	    if sym == "/" or sym == "`" then
 		return ">"
+	    elseif sym == "\\" or sym == "'" or sym == "-" then
+		return "<"
+	    elseif sym == "|" then
+		return "^"
 	    else
 	        return sym
 	    end
 	else
 	    -- Negative interpretation.
-	    if sym == "/" then
+	    -- Backwards compatibility:
+	    if old_semantics then
+	        if sym == "/" then
+		    return "v"
+		else
+		    return sym
+		end
+	    end
+	    if sym == "/" or sym == "\\" or sym == "|" then
 		return "v"
+	    elseif sym == "-" then
+		return ">"
+	    elseif sym == "`" or sym == "'" then
+		return "^"
 	    else
 	        return state_cmd
 	    end
@@ -287,10 +332,15 @@ Machine.new = function(tab)
 	--
 	if move_cmd == "*" then
 	    --
-	    -- Special - match anything, do no rewriting or data head
-	    -- moving, and advance the state using positive intrepretation.
+	    -- Special - match anything, do no rewriting,
+	    -- move the data head using the replacement symbol
+	    -- (unless using the old compatibility semantics,)
+	    -- and advance the state using the positive interpretation.
 	    --
 	    debug_log("-> Wildcard!")
+	    if not old_semantics then
+	        data_head:move(repl_sym)
+	    end
 	    code_move = interpret(state_cmd, true)
 	elseif seek_sym == this_sym then
 	    --
@@ -331,9 +381,15 @@ Machine.new = function(tab)
     method.run = function(m)
 	local done = false
 	while not done do
-	    debug_log(pf:render())
+	    if display then
+		io.stdout:write(pf:render(display.x1, display.y1,
+		                          display.x2, display.y2))
+	    else
+	        debug_log(pf:render())
+	    end
 	    done = not m:step()
 	end
+	data_head:report()
     end
 
     return method
@@ -347,8 +403,23 @@ local pf = Playfield.new()
 
 local argno = 1
 while arg[argno] and string.find(arg[argno], "^%-") do
-    if arg[argno] == "-q" then
+    if arg[argno] == "-q" then          -- quiet
         debug_log = function() end
+    elseif arg[argno] == "-o" then      -- use v1.0 semantics
+        old_semantics = true
+    elseif arg[argno] == "-d" then
+        argno = argno + 1
+	local found, len
+	display = {}
+        found, len, display.x1, display.y1, display.x2, display.y2 =
+	    string.find(arg[argno], "(%-?%d+)%,(%-?%d+)%:(%-?%d+)%,(%-?%d+)")
+	if not found then
+	    usage()
+	end
+	display.x1 = tonumber(display.x1)
+	display.y1 = tonumber(display.y1)
+	display.x2 = tonumber(display.x2)
+	display.y2 = tonumber(display.y2)	
     else
         usage()
     end

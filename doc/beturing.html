@@ -1,12 +1,12 @@
 <html>
-<head><title>Beturing - a Befunge-flavoured Turing(-esque) machine</title></head>
+<head><title>Beturing - a Befunge-flavoured Turing machine</title></head>
 <body>
 <h1>Beturing</h1>
-<h2>a Befunge-flavoured Turing(-esque) machine</h2>
+<h2>a Befunge-flavoured Turing machine</h2>
 
-<p><i>Chris Pressey, June 2005</i></p>
+<p><i>v1.1, Chris Pressey, June 8 2005</i></p>
 <!--
-$Id: beturing.html 8 2005-06-06 22:46:20Z catseye $
+$Id: beturing.html 16 2005-06-11 03:55:20Z catseye $
 -->
 
 <h3>Introduction</h3>
@@ -85,6 +85,8 @@ repeats indefinitely until the machine enters the <i>halt</i> state.</p>
 <ul>
 <li>If the data head movement operator is the special symbol <tt>*</tt>, the following things happen:
   <ul>
+  <li>The data head is moved by the positive interpretation of the replacement symbol.  (Note that this
+  behaviour is new in version 1.1; no data head movement would occur in the <tt>*</tt> case in v1.0.)</li>
   <li>The code head is moved by the positive interpretation (x2) of the state transition operator.</li>
   </ul>
 </li>
@@ -115,6 +117,11 @@ operators are given below:</p>
 <tr><td><tt>v</tt></td><td>Move down</td><td>Move down</td></tr>
 <tr><td><tt>.</tt></td><td>Don't move</td><td>Don't move</td></tr>
 <tr><td><tt>/</tt></td><td>Move right</td><td>Move down</td></tr>
+<tr><td bgcolor=#d0d0d0><tt>\</tt></td><td>Move left</td><td>Move down</td></tr>
+<tr><td bgcolor=#d0d0d0><tt>|</tt></td><td>Move up</td><td>Move down</td></tr>
+<tr><td bgcolor=#d0d0d0><tt>-</tt></td><td>Move left</td><td>Move right</td></tr>
+<tr><td bgcolor=#d0d0d0><tt>`</tt></td><td>Move right</td><td>Move up</td></tr>
+<tr><td bgcolor=#d0d0d0><tt>'</tt></td><td>Move left</td><td>Move up</td></tr>
 <tr><td><tt>@</tt></td><td>Halt</td><td>Halt</td></tr>
 </table></center>
 
@@ -124,26 +131,56 @@ this is used everywhere for moving the code head because codes are 2x2 cell bloc
 <h3>Discussion</h3>
 
 <p>The Beturing language was designed (in part) as a test of the wire-crossing problem,
-in the following manner.</p>
+in the following manner.  Note these things about Beturing:</p>
 
-<p>Note that the code head does not have "direction" or "delta" state as the instruction
-pointer does in Befunge; it has only "position" state.  Its next position (and thus the machine's
-next state) is determined entirely by the state transition operator of the current code.</p>
+<ul>
+<li>Unlike Befunge's instruction pointer, the code head does not have "direction" or
+"delta" state; it has only "position" state.  Its next position (and thus the machine's
+next state) is determined entirely by the state transition operator of the current code.</li>
 
-<p>Note also that there is no "leap over" state transition operator (like <tt>#</tt> in Befunge.)
+<li>Also unlike Befunge and its <tt>#</tt> instruction,
+there is no "leap over" state transition operator.
 Therefore the next state must always be reachable by a continuous, unbroken
-path through the playfield.</p>
+path through the playfield.</li>
 
-<p>This means that a Beturing machine is incapable of having a state transition diagram
-that, when rendered on a 2-dimensional plane, requires that two edges cross.
-(A state diagram with, e.g., 5 states, and a transition from each state to every other state, appears
-to have this property (although it would be nice to have a reference to a watertight proof of this...))</p>
+<li>Lastly, unlike Befunge and its torus, the Beturing playfield is really unbounded in all
+four directions - there is no wrapping around, making it a true plane.</li>
+</ul>
+
+<p>All this added together means that a Beturing machine is incapable of having
+a state transition diagram that is not a
+<a href="http://planetmath.org/?op=getobj&from=objects&name=PlanarGraph">planar graph</a>.
+A state transition diagram which is a complete 5-vertex graph, for example, is not planar.</p>
 
 <p>This <b>might</b> mean that it is impossible to construct a
-true universal Turing machine in Beturing, <i>if</i> a  universal Turing machine
-requires a state diagram which has edges that cross when rendered in two dimensions.</p>
+true universal Turing machine in Beturing, <i>if</i> a universal Turing machine
+requires a state diagram that is not a planar graph.</p>
 
-<p>If this were the case (and it may well be) then Beturing would not be Turing-complete,
+<p>If this were the case then Beturing would not be Turing-complete,
 and in fact its level of computational power would probably be difficult to determine.</p>
+
+<h3>Update</h3>
+
+<p>Version 1.0 of the Beturing language, and an interpreter for it written in Lua 5,
+was released June 6th 2005.</p>
+
+<p>On June 7th, graue's development of the Archway language, and my
+sketches for a Smallfuck interpreter in Beturing have both strongly suggested that a
+universal Turing machine's state diagram can indeed be a planar graph.  I'd still
+like to go ahead and implement the Smallfuck interpreter, though, since (even if it's
+a foregone conclusion) it would be pretty impressive to see in action.</p>
+
+<p>On June 8th I added the "data head can move on <tt>*</tt>" semantics for v1.1,
+in preparation for implementing a Smallfuck interpreter from my sketches.  Note that
+this addition does not constitute an increase in Beturing's computational power, only
+its expressiveness.  It was possible to do the same thing in v1.0, but it required one
+code per symbol in the alphabet, which was a little excessive.</p>
+
+<p>On June 10th I added extra "decision" state transition operators (shown with
+a grey background in the above table) for extra flexibility; there are some planar
+graphs that can't be rendered in Beturing with just <tt>/</tt>: see the diagram of
+the Uhing 5-state Busy Beaver machine, for example.  As always, you can use the
+<tt>-o</tt> flag to the interpreter to enforce the v1.0 semantics where these
+aren't available, if you're a purist.</p>
 
 </body></html>

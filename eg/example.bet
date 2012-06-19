@@ -1,17 +1,17 @@
 ## Trivial Beturing program that swaps a's and b's along a line.
-## $Id: example.bet 2 2005-06-06 22:28:23Z catseye $
+## $Id: example.bet 14 2005-06-09 03:30:28Z catseye $
 # D(40, 4)
 # @(40, 4)
-.bbab.
+$bbab$
 # C(0, 0)
 # @(0, 0)
-
+ . . . . . .
 *v*<*<*<*>*v
-aa  ab    aa
+aa .ab . .aa .
 >/*>./*^*^</*v
-bb  ba    bb
+bb .ba . .bb .
 >/*^./*^*^</*v
-..  ..    ..
+$$ .$$ . .$$ .
 >/*^</*>*^.@*v
-
+         . . .
 *@      *^*<*<
